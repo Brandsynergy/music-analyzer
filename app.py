@@ -78,6 +78,13 @@ def analyze_music_file(file_path):
         'style_characteristics': style_characteristics,
         'features': features
     }
+    @app.route('/')
+def home():
+    return "Music Analyzer API is running!"
+
+@app.route('/api/music/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'healthy', 'message': 'Music analyzer API is running'})
 @app.route('/')
 def home():
     return "Music Analyzer API is running!"
