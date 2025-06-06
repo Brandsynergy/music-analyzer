@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Genre & Style Analyzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        .upload-area {
+            border: 2px dashed #fff;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .upload-area:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .results {
+            margin-top: 30px;
+            display: none;
+        }
+        .result-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .feature-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Music Genre & Style Analyzer</h1>
+        <p>Upload a music file to analyze its genre and style characteristics</p>
+        
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <h3>📁 Upload Your Music File</h3>
+            <p>Click here to select a file or drag and drop</p>
+            <p><small>Supports: MP3, WAV, OGG, FLAC, M4A (max 50MB)</small></p>
+            <input type="file" id="fileInput" accept=".mp3,.wav,.ogg,.flac,.m4a" style="display: none;" onchange="analyzeFile()">
+            <button class="btn">Select File</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <h3>Analyzing your music...</h3>
+            <p>This may take a few moments</p>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="result-card">
+                <h3>🎯 Genre Classification</h3>
+                <div id="genreResults"></div>
+            </div>
+            
+            <div class="result-card">
+                <h3>🎨 Style Characteristics</h3>
+                <div id="styleResults"></div>
+            </div>
+            
+            <div class="result-card">
+                <h3>📊 Audio Features</h3>
+                <div id="featureResults"></div>
+            </div>
+            
+            <div class="result-card">
+                <h3>🤖 AI Music Generation Insights</h3>
+                <div id="aiInsights"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function analyzeFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) return;
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                // Send to backend (use relative URL for deployment)
+                const response = await fetch('/api/music/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Analysis failed');
+                }
+                
+                const data = await response.json();
+                displayResults(data);
+                
+            } catch (error) {
+                alert('Error analyzing file: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        function displayResults(data) {
+            // Display genre results
+            const genreHtml = `
+                <h4>Primary Genre: ${data.genre.primary} (${Math.round(data.genre.probability * 100)}%)</h4>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${data.genre.probability * 100}%"></div>
+                </div>
+                <h5>Alternative Genres:</h5>
+                ${data.genre.alternatives.map(alt => `
+                    <div style="margin: 10px 0;">
+                        ${alt.genre}: ${Math.round(alt.probability * 100)}%
+                        <div class="progress-bar" style="height: 15px;">
+                            <div class="progress-fill" style="width: ${alt.probability * 100}%"></div>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+            document.getElementById('genreResults').innerHTML = genreHtml;
+            
+            // Display style characteristics
+            const styleHtml = `
+                <div class="feature-grid">
+                    ${Object.entries(data.style_characteristics).map(([key, value]) => `
+                        <div class="feature-item">
+                            <strong>${key.charAt(0).toUpperCase() + key.slice(1)}</strong><br>
+                            ${Math.round(value * 100)}%
+                            <div class="progress-bar" style="height: 10px; margin-top: 5px;">
+                                <div class="progress-fill" style="width: ${value * 100}%"></div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('styleResults').innerHTML = styleHtml;
+            
+            // Display audio features
+            const featureHtml = `
+                <div class="feature-grid">
+                    ${Object.entries(data.features).slice(0, 12).map(([key, value]) => `
+                        <div class="feature-item">
+                            <strong>${key.replace(/_/g, ' ').toUpperCase()}</strong><br>
+                            ${typeof value === 'number' ? value.toFixed(2) : value}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('featureResults').innerHTML = featureHtml;
+            
+            // Display AI insights
+            const aiInsightsHtml = `
+                <p><strong>For AI Music Generation Apps:</strong></p>
+                <ul>
+                    <li>Primary Genre: <strong>${data.genre.primary}</strong> (${Math.round(data.genre.probability * 100)}% confidence)</li>
+                    <li>Tempo: <strong>${data.features.tempo.toFixed(1)} BPM</strong></li>
+                    <li>Energy Level: <strong>${Math.round(data.style_characteristics.energetic * 100)}%</strong></li>
+                    <li>Electronic Content: <strong>${Math.round(data.style_characteristics.electronic * 100)}%</strong></li>
+                    <li>Rhythmic Intensity: <strong>${Math.round(data.style_characteristics.rhythmic * 100)}%</strong></li>
+                </ul>
+                <p><strong>Recommended AI Generation Parameters:</strong></p>
+                <ul>
+                    <li>Genre: ${data.genre.primary}</li>
+                    <li>Tempo: ${data.features.tempo.toFixed(0)} BPM</li>
+                    <li>Energy: ${data.style_characteristics.energetic.toFixed(2)}</li>
+                    <li>Electronic: ${data.style_characteristics.electronic.toFixed(2)}</li>
+                    <li>Rhythmic: ${data.style_characteristics.rhythmic.toFixed(2)}</li>
+                </ul>
+            `;
+            document.getElementById('aiInsights').innerHTML = aiInsightsHtml;
+            
+            // Show results
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+
