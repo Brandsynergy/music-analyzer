@@ -9,13 +9,26 @@ CORS(app)
 
 # Simulate analysis
 def analyze_music_file(file_path):
-    genres = ['electronic', 'rock', 'pop', 'jazz', 'afrobeat', 'amapiano']
+    genres = ['afrobeat', 'amapiano', 'afro-fusion', 'pop', 'r&b']
     primary_genre = random.choice(genres)
+
+    beat_styles = {
+        'afro_rhythm': round(random.uniform(0.7, 1.0), 2),
+        'log_drum_intensity': round(random.uniform(0.5, 1.0), 2),
+        'percussion_richness': round(random.uniform(0.6, 1.0), 2),
+        'vocal_lift': round(random.uniform(0.5, 0.9), 2),
+        'danceability': round(random.uniform(0.7, 1.0), 2),
+        'call_response_style': round(random.uniform(0.3, 0.8), 2),
+        'piano_roll_presence': round(random.uniform(0.4, 0.9), 2),
+        'chop_vocal_elements': round(random.uniform(0.2, 0.7), 2)
+    }
 
     return {
         'genre': primary_genre,
-        'confidence': round(random.uniform(0.7, 0.99), 2)
+        'confidence': round(random.uniform(0.75, 0.95), 2),
+        'beat_styles': beat_styles
     }
+
 
 @app.route('/')
 def index():
