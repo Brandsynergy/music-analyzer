@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AI Music Genre Analyzer</title>
+  <title>AI Music Analyzer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -19,22 +19,16 @@
       padding: 20px 0;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 24px;
-    }
-
     #uploadForm {
-      margin: 50px auto 20px;
+      margin: 40px auto 10px;
       background: white;
       padding: 30px;
-      max-width: 400px;
+      max-width: 450px;
       border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
     input[type="file"] {
-      width: 100%;
       margin: 20px 0;
     }
 
@@ -44,36 +38,28 @@
       border: none;
       padding: 10px 20px;
       border-radius: 4px;
-      cursor: pointer;
       font-size: 16px;
-      transition: background-color 0.3s ease;
+      margin: 5px;
+      cursor: pointer;
     }
 
     button:hover {
       background-color: #0056b3;
     }
 
-    .note {
-      font-size: 14px;
-      color: #777;
-      margin-top: 10px;
-    }
-
     #loading {
-      margin-top: 20px;
       display: none;
-      font-weight: bold;
-      color: #444;
+      margin-top: 15px;
     }
 
     #spinner {
-      border: 4px solid #f3f3f3;
+      border: 4px solid #eee;
       border-top: 4px solid #007bff;
       border-radius: 50%;
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       animation: spin 1s linear infinite;
-      margin: 10px auto;
+      margin: auto;
     }
 
     @keyframes spin {
@@ -82,16 +68,12 @@
     }
 
     #result {
-      margin-top: 30px;
-      font-size: 18px;
-      color: #333;
+      background: #ffffff;
+      max-width: 450px;
+      margin: 20px auto;
       padding: 20px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.08);
       display: none;
     }
 
@@ -100,91 +82,121 @@
       width: 100%;
     }
 
+    pre {
+      text-align: left;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 13px;
+    }
+
     @media screen and (max-width: 480px) {
       #uploadForm, #result {
         width: 90%;
         padding: 20px;
-      }
-
-      button {
-        width: 100%;
       }
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>AI Music Genre Analyzer</h1>
-  </header>
+<header>
+  <h1>AI Music Genre & Beat Analyzer</h1>
+</header>
 
-  <form id="uploadForm">
-    <h2>Upload a Music File</h2>
-    <input type="file" id="musicFile" accept=".mp3,.wav" required />
-    <button type="submit">Analyze</button>
-    <p class="note">Only MP3 or WAV files under 10MB</p>
-  </form>
+<form id="uploadForm">
+  <h3>Upload Your Afrobeat / Amapiano Track</h3>
+  <input type="file" id="musicFile" accept=".mp3,.wav" required>
+  <br>
+  <button type="submit">Analyze</button>
+</form>
 
-  <div id="loading">
-    <div id="spinner"></div>
-    Analyzing music file...
-  </div>
+<div id="loading">
+  <div id="spinner"></div>
+  <p>Analyzing your music...</p>
+</div>
 
-  <div id="result">
-    <h3>Analysis Results</h3>
-    <p><strong>Genre:</strong> <span id="genre"></span></p>
-    <p><strong>Confidence:</strong> <span id="confidence"></span></p>
-    <audio id="audioPlayer" controls></audio>
-  </div>
+<div id="result">
+  <h3>Analysis Results</h3>
+  <p><strong>Genre:</strong> <span id="genre"></span></p>
+  <p><strong>Confidence:</strong> <span id="confidence"></span></p>
+  <div id="styles"></div>
+  <audio id="audioPlayer" controls></audio>
 
-  <script>
-    const form = document.getElementById("uploadForm");
-    const resultBox = document.getElementById("result");
-    const loading = document.getElementById("loading");
-    const genreEl = document.getElementById("genre");
-    const confidenceEl = document.getElementById("confidence");
-    const audioPlayer = document.getElementById("audioPlayer");
+  <h4 style="margin-top: 20px;">🎯 Prompt for AI Music Generator (Suno)</h4>
+  <pre id="textPrompt"></pre>
 
-    form.addEventListener("submit", async function (e) {
-      e.preventDefault();
+  <h4>🛠️ Export as JSON</h4>
+  <pre id="jsonOutput"></pre>
+</div>
 
-      const fileInput = document.getElementById("musicFile");
-      const file = fileInput.files[0];
-      if (!file) return;
+<script>
+const form = document.getElementById("uploadForm");
+const resultBox = document.getElementById("result");
+const loading = document.getElementById("loading");
+const genreEl = document.getElementById("genre");
+const confidenceEl = document.getElementById("confidence");
+const audioPlayer = document.getElementById("audioPlayer");
+const textPrompt = document.getElementById("textPrompt");
+const jsonOutput = document.getElementById("jsonOutput");
 
-      const formData = new FormData();
-      formData.append("file", file);
+form.addEventListener("submit", async function (e) {
+  e.preventDefault();
 
-      // Show loading
-      loading.style.display = "block";
-      resultBox.style.display = "none";
+  const fileInput = document.getElementById("musicFile");
+  const file = fileInput.files[0];
+  if (!file) return;
 
-      // Set audio source
-      const audioURL = URL.createObjectURL(file);
-      audioPlayer.src = audioURL;
+  const formData = new FormData();
+  formData.append("file", file);
 
-      try {
-        const response = await fetch("/api/music/analyze", {
-          method: "POST",
-          body: formData
-        });
+  // Show spinner
+  loading.style.display = "block";
+  resultBox.style.display = "none";
 
-        const data = await response.json();
+  // Prepare audio player
+  const audioURL = URL.createObjectURL(file);
+  audioPlayer.src = audioURL;
 
-        genreEl.textContent = data.genre;
-        confidenceEl.textContent = data.confidence;
-
-        loading.style.display = "none";
-        resultBox.style.display = "block";
-
-      } catch (error) {
-        alert("Something went wrong while analyzing. Please try again.");
-        loading.style.display = "none";
-      }
+  try {
+    const res = await fetch("/api/music/analyze", {
+      method: "POST",
+      body: formData
     });
-  </script>
+
+    const data = await res.json();
+
+    genreEl.textContent = data.genre;
+    confidenceEl.textContent = data.confidence;
+
+    // Text prompt builder
+    let promptText = `Genre: ${data.genre}\nConfidence: ${data.confidence}\nKey Beat Styles:\n`;
+    for (const [style, val] of Object.entries(data.beat_styles)) {
+      promptText += `- ${style.replace(/_/g, ' ')}: ${val}\n`;
+    }
+    textPrompt.textContent = promptText;
+
+    // JSON Export
+    jsonOutput.textContent = JSON.stringify(data, null, 2);
+
+    // Show beat styles
+    let stylesHTML = '<h4>Beat Style Analysis</h4><ul style="list-style:none; padding:0;">';
+    for (const [style, val] of Object.entries(data.beat_styles)) {
+      stylesHTML += `<li><strong>${style.replace(/_/g, ' ')}:</strong> ${val}</li>`;
+    }
+    stylesHTML += '</ul>';
+    document.getElementById("styles").innerHTML = stylesHTML;
+
+    loading.style.display = "none";
+    resultBox.style.display = "block";
+
+  } catch (err) {
+    alert("Something went wrong. Please try again.");
+    loading.style.display = "none";
+  }
+});
+</script>
 
 </body>
 </html>
-
-
