@@ -19,7 +19,7 @@ def analyze_music_file(file_path):
 
 @app.route('/')
 def index():
-    return "✅ Your Music Analyzer API is Live!"
+    return send_from_directory('static', 'index.html')
 
 @app.route('/api/music/health', methods=['GET'])
 def health():
