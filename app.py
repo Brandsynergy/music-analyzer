@@ -9,7 +9,7 @@ CORS(app)
 
 # Simulate analysis
 def analyze_music_file(file_path):
-    genres = ['electronic', 'rock', 'pop', 'jazz']
+    genres = ['electronic', 'rock', 'pop', 'jazz', 'afrobeat', 'amapiano']
     primary_genre = random.choice(genres)
 
     return {
