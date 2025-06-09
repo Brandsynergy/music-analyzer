@@ -1,15 +1,96 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Music Analyzer</title>
+  <meta charset="UTF-8">
+  <title>🎵 AI Music Genre Analyzer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      padding: 40px;
+      margin: 0;
+    }
+
+    header {
+      background-color: #343a40;
+      color: white;
+      padding: 20px 0;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    #uploadForm {
+      margin-top: 50px;
+      background: white;
+      padding: 30px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input[type="file"] {
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .note {
+      font-size: 14px;
+      color: #555;
+      margin-top: 10px;
+    }
+
+    @media screen and (max-width: 480px) {
+      #uploadForm {
+        width: 90%;
+        padding: 20px;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
-<body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
-  <h2>🎵 Upload a Song to Analyze</h2>
+<body>
+  <header>
+    <h1>🎶 AI Music Genre Analyzer</h1>
+  </header>
+
   <form id="uploadForm">
-    <input type="file" id="musicFile" accept=".mp3,.wav" required /><br><br>
+    <h2>Upload a Music File</h2>
+    <input type="file" id="musicFile" accept=".mp3,.wav" required />
+    <br>
     <button type="submit">Analyze</button>
+    <p class="note">Supported formats: MP3, WAV (max 10MB)</p>
   </form>
-  <div id="result" style="margin-top: 20px; font-size: 18px;"></div>
+
+  <div id="result"></div>
 
   <script>
     const form = document.getElementById("uploadForm");
@@ -26,10 +107,11 @@
 
       const result = await response.json();
       document.getElementById("result").innerHTML = `
-        <strong>Genre:</strong> ${result.genre} <br>
-        <strong>Confidence:</strong> ${result.confidence}
+        <p><strong>🎧 Detected Genre:</strong> ${result.genre}</p>
+        <p><strong>Confidence:</strong> ${result.confidence}</p>
       `;
     });
   </script>
 </body>
 </html>
+
