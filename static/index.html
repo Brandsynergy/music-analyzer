@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>🎵 AI Music Genre Analyzer</title>
+  <title>AI Music Genre Analyzer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       background: #f8f9fa;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
-      padding: 40px;
       margin: 0;
+      padding: 0;
+      text-align: center;
     }
 
     header {
@@ -25,18 +25,17 @@
     }
 
     #uploadForm {
-      margin-top: 50px;
+      margin: 50px auto 20px;
       background: white;
       padding: 30px;
       max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
 
     input[type="file"] {
-      margin-bottom: 20px;
+      width: 100%;
+      margin: 20px 0;
     }
 
     button {
@@ -47,26 +46,62 @@
       border-radius: 4px;
       cursor: pointer;
       font-size: 16px;
+      transition: background-color 0.3s ease;
     }
 
     button:hover {
       background-color: #0056b3;
     }
 
-    #result {
-      margin-top: 20px;
-      font-size: 18px;
-      color: #333;
-    }
-
     .note {
       font-size: 14px;
-      color: #555;
+      color: #777;
       margin-top: 10px;
     }
 
+    #loading {
+      margin-top: 20px;
+      display: none;
+      font-weight: bold;
+      color: #444;
+    }
+
+    #spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #007bff;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      animation: spin 1s linear infinite;
+      margin: 10px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #result {
+      margin-top: 30px;
+      font-size: 18px;
+      color: #333;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      display: none;
+    }
+
+    audio {
+      margin-top: 15px;
+      width: 100%;
+    }
+
     @media screen and (max-width: 480px) {
-      #uploadForm {
+      #uploadForm, #result {
         width: 90%;
         padding: 20px;
       }
@@ -78,40 +113,78 @@
   </style>
 </head>
 <body>
+
   <header>
-    <h1>🎶 AI Music Genre Analyzer</h1>
+    <h1>AI Music Genre Analyzer</h1>
   </header>
 
   <form id="uploadForm">
     <h2>Upload a Music File</h2>
     <input type="file" id="musicFile" accept=".mp3,.wav" required />
-    <br>
     <button type="submit">Analyze</button>
-    <p class="note">Supported formats: MP3, WAV (max 10MB)</p>
+    <p class="note">Only MP3 or WAV files under 10MB</p>
   </form>
 
-  <div id="result"></div>
+  <div id="loading">
+    <div id="spinner"></div>
+    Analyzing music file...
+  </div>
+
+  <div id="result">
+    <h3>Analysis Results</h3>
+    <p><strong>Genre:</strong> <span id="genre"></span></p>
+    <p><strong>Confidence:</strong> <span id="confidence"></span></p>
+    <audio id="audioPlayer" controls></audio>
+  </div>
 
   <script>
     const form = document.getElementById("uploadForm");
+    const resultBox = document.getElementById("result");
+    const loading = document.getElementById("loading");
+    const genreEl = document.getElementById("genre");
+    const confidenceEl = document.getElementById("confidence");
+    const audioPlayer = document.getElementById("audioPlayer");
+
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
+
       const fileInput = document.getElementById("musicFile");
+      const file = fileInput.files[0];
+      if (!file) return;
+
       const formData = new FormData();
-      formData.append("file", fileInput.files[0]);
+      formData.append("file", file);
 
-      const response = await fetch("/api/music/analyze", {
-        method: "POST",
-        body: formData
-      });
+      // Show loading
+      loading.style.display = "block";
+      resultBox.style.display = "none";
 
-      const result = await response.json();
-      document.getElementById("result").innerHTML = `
-        <p><strong>🎧 Detected Genre:</strong> ${result.genre}</p>
-        <p><strong>Confidence:</strong> ${result.confidence}</p>
-      `;
+      // Set audio source
+      const audioURL = URL.createObjectURL(file);
+      audioPlayer.src = audioURL;
+
+      try {
+        const response = await fetch("/api/music/analyze", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+
+        genreEl.textContent = data.genre;
+        confidenceEl.textContent = data.confidence;
+
+        loading.style.display = "none";
+        resultBox.style.display = "block";
+
+      } catch (error) {
+        alert("Something went wrong while analyzing. Please try again.");
+        loading.style.display = "none";
+      }
     });
   </script>
+
 </body>
 </html>
+
 
