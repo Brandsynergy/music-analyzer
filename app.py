@@ -94,7 +94,7 @@ def health_check():
     return jsonify({'status': 'healthy', 'message': 'Music analyzer API is running'})
 @app.route('/')
 def index():
-    return send_from_directory('static', 'index.html')
+    return "✅ Your Flask Music Analyzer API is Live on Render!"
 
 @app.route('/api/music/health', methods=['GET'])
 def health_check():
